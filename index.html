@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<!-- htmlhint doctype-first:false -->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BeamOpt</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:          #F0F2F5;
+  --bg-panel:    #FFFFFF;
+  --bg-card:     #FFFFFF;
+  --bg-hover:    #F5F7FA;
+  --bg-input:    #F8F9FB;
+
+  --border:      #E2E6EC;
+  --border-hi:   #CDD3DC;
+
+  --accent:      #2563EB;
+  --accent-dim: rgba(37,99,235,0.05);
+  --accent-light:#EFF4FF;
+
+  --green:       #16A34A;
+  --green-dim:   rgba(22,163,74,0.09);
+  --green-light: #F0FDF4;
+  --red:         #DC2626;
+  --red-dim:     rgba(220,38,38,0.09);
+  --red-light:   #FEF2F2;
+  --amber:       #D97706;
+  --amber-dim:   rgba(217,119,6,0.09);
+  --amber-light: #FFFBEB;
+
+  --navy:        #0F172A;
+  --t1:          #0F172A;
+  --t2:          #374151;
+  --t3:          #6B7280;
+  --t4:          #9CA3AF;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 3px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 6px 16px rgba(0,0,0,0.08);
+
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --r:  8px;
+  --r2: 12px;
+}
+
+body.dark {
+  --bg:          #0B1220;
+  --bg-panel:    #121A2B;
+  --bg-card:     #172033;
+  --bg-hover:    #1E2A44;
+  --bg-input:    #1A2436;
+
+  --border:      #24324A;
+  --border-hi:   #2F3F5F;
+
+  --accent:      #3B82F6;
+  --accent-dim: rgba(59,130,246,0.10);
+  --accent-light:#1E293B;
+
+  --green:       #22C55E;
+  --green-light: rgba(34,197,94,0.15);
+  --red:         #EF4444;
+  --red-light:   rgba(239,68,68,0.15);
+  --amber:       #F59E0B;
+  --amber-light: rgba(245,158,11,0.15);
+
+  --navy: #F9FAFB;
+  --t1:   #E5E7EB;
+  --t2:   #9CA3AF;
+  --t3:   #6B7280;
+  --t4:   #4B5563;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 3px 10px rgba(0,0,0,0.6);
+  --shadow-lg: 0 6px 18px rgba(0,0,0,0.7);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+html, body {
+  height:100%; overflow:hidden;
+  background:var(--bg); color:var(--t1);
+  font-family:var(--sans); font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border-hi); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+
+/* ── APP ────────────────────────────────────────────────── */
+#app { display:flex; flex-direction:column; height:100vh; }
+
+/* ── UPLOAD SCREEN ──────────────────────────────────────── */
+#upload-screen {
+  position:fixed; inset:0;
+  background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  z-index:500;
+}
+
+.upload-card {
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:44px 48px;
+  width:520px;
+  box-shadow:var(--shadow-lg);
+  display:flex; flex-direction:column; gap:26px;
+}
+
+.upload-hdr {
+  display:flex; align-items:center; gap:14px;
+  padding-bottom:22px;
+  border-bottom:2px solid var(--border);
+}
+
+.upload-logo {
+  width:40px; height:40px;
+  background:var(--accent);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:12px; font-weight:600;
+  color:#fff; letter-spacing:-0.5px; flex-shrink:0;
+  box-shadow:0 4px 10px rgba(37,99,235,0.3);
+}
+
+.upload-title { font-family:var(--sans); font-size:18px; font-weight:700; color:var(--navy); }
+.upload-sub   { font-size:12px; color:var(--t3); margin-top:3px; }
+
+.upload-sec { display:flex; flex-direction:column; gap:8px; }
+
+.upload-lbl {
+  font-size:11px; font-weight:600;
+  letter-spacing:0.5px; text-transform:uppercase; color:var(--t3);
+}
+
+.upload-desc { font-family:var(--mono); font-size:11px; color:var(--t4); }
+
+.dropzone {
+  border:2px dashed var(--border-hi);
+  border-radius:var(--r);
+  padding:14px 16px;
+  cursor:pointer;
+  background:var(--bg-input);
+  display:flex; align-items:center; gap:12px;
+  transition:border-color .18s, background .18s;
+}
+.dropzone:hover, .dropzone.drag-over { border-color:var(--accent); background:var(--accent-dim); }
+.dropzone.loaded { border-color:var(--green); background:var(--green-light); border-style:solid; }
+
+.dz-icon { font-size:20px; flex-shrink:0; opacity:.6; }
+.dropzone.loaded .dz-icon { opacity:1; }
+
+.dz-main {
+  font-family:var(--mono); font-size:12px; color:var(--t3);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.dropzone.loaded .dz-main { color:var(--green); font-weight:500; }
+.dz-hint { font-size:10px; color:var(--t4); margin-top:2px; }
+
+input[type=file] { display:none; }
+
+.go-btn {
+  padding:12px 20px;
+  background:var(--accent); color:#fff;
+  border:none; border-radius:var(--r);
+  font-family:var(--sans); font-size:14px; font-weight:600;
+  cursor:pointer; transition:all .15s; margin-top:2px;
+  box-shadow:0 4px 12px rgba(37,99,235,0.3);
+}
+.go-btn:disabled { opacity:.35; cursor:not-allowed; box-shadow:none; }
+.go-btn:not(:disabled):hover { background:#1D4ED8; box-shadow:0 6px 16px rgba(37,99,235,0.4); transform:translateY(-1px); }
+
+.upload-err {
+  font-family:var(--mono); font-size:11px; color:var(--red);
+  display:none; padding:9px 13px;
+  background:var(--red-light);
+  border:1px solid rgba(220,38,38,.2);
+  border-radius:var(--r);
+}
+
+/* ── TITLEBAR ───────────────────────────────────────────── */
+#titlebar {
+  display:flex; align-items:center; justify-content:space-between;
+  height:52px; padding:0 20px;
+  background: #0F172A;;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  -webkit-app-region:drag; flex-shrink:0; z-index:100;
+}
+
+.tb-l { display:flex; align-items:center; gap:12px; }
+
+.tb-logo {
+  width:28px; height:28px;
+  background:var(--accent); border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:10px; font-weight:600; color:#fff;
+}
+
+.tb-name { font-family:var(--sans); font-size:14px; font-weight:700; color:#fff; letter-spacing:.5px; }
+
+.tb-sep { width:1px; height:16px; background:rgba(255,255,255,0.15); }
+
+.tb-session { font-family:var(--mono); font-size:10px; color:rgba(255,255,255,0.45); }
+
+.tb-r { display:flex; align-items:center; gap:8px; -webkit-app-region:no-drag; }
+
+.reload-btn {
+  padding:5px 12px;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px; color:rgba(255,255,255,0.7);
+  font-size:11px; font-family:var(--sans); cursor:pointer;
+  transition:all .12s;
+}
+.reload-btn:hover { background:rgba(255,255,255,0.15); color:#fff; }
+
+.wc {
+  width:26px; height:26px; border-radius:5px;
+  border:none; background:transparent; color:rgba(255,255,255,0.5);
+  font-size:12px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .1s;
+}
+.wc:hover { background:rgba(255,255,255,0.12); color:#fff; }
+.wc.close:hover { background:#DC2626; color:#fff; }
+
+/* ── NAV ────────────────────────────────────────────────── */
+#nav {
+  display:flex; align-items:stretch;
+  padding:0 20px;
+  background: #0F172A;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink:0;
+  box-shadow:var(--shadow-sm);
+}
+
+.nav-tab {
+  padding:0 18px; height:44px;
+  font-size:13px; font-weight:500;
+  color:var(--t3); cursor:pointer;
+  border:none; background:none;
+  border-bottom:3px solid transparent;
+  transition:color .13s, border-color .13s;
+  font-family:var(--sans); white-space:nowrap;
+  margin-bottom:-2px;
+}
+.nav-tab:hover { color:var(--t2); }
+.nav-tab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+
+.nav-sp { flex:1; }
+
+.export-btn {
+  align-self:center;
+  padding:7px 14px;
+  background:var(--accent-light);
+  border:1px solid rgba(37,99,235,.25);
+  color:var(--accent);
+  border-radius:7px;
+  font-size:12px; font-weight:600;
+  cursor:pointer; font-family:var(--sans);
+  transition:all .13s;
+}
+.export-btn:hover { background:var(--accent); color:#fff; box-shadow:0 4px 10px rgba(37,99,235,0.25); }
+
+/* ── PAGES ──────────────────────────────────────────────── */
+#content { flex:1; overflow:hidden; position:relative; }
+
+.page {
+  display:none; height:100%;
+  overflow-y:auto; padding:20px 22px 28px;
+}
+.page.active { display:block; }
+
+/* ── KPI STRIP ──────────────────────────────────────────── */
+.kpi-strip {
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:12px; margin-bottom:16px;
+}
+
+.kpi {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:18px 18px 14px;
+  position:relative; overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .15s, transform .15s;
+}
+.kpi:hover { box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+
+.kpi-lbl {
+  font-size:11px; font-weight:600;
+  letter-spacing:0.3px; text-transform:uppercase;
+  color:var(--t3); margin-bottom:10px;
+}
+
+.kpi-val {
+  font-family:var(--mono); font-size:26px;
+  font-weight:600; line-height:1;
+  color:var(--t1); margin-bottom:7px;
+  letter-spacing:-.5px;
+}
+.kpi-val.g { color:var(--green); }
+.kpi-val.a { color:var(--accent); }
+.kpi-val.r { color:var(--red); }
+
+.kpi-meta { font-size:11px; color:var(--t3); font-family:var(--sans); }
+
+.kpi-rule { position:absolute; bottom:0; left:0; right:0; height:3px; border-radius:0 0 var(--r2) var(--r2); }
+
+/* ── GRIDS ──────────────────────────────────────────────── */
+.g2  { display:grid; grid-template-columns:1fr 1fr;  gap:14px; margin-bottom:14px; }
+.g21 { display:grid; grid-template-columns:2fr 1fr;  gap:14px; margin-bottom:14px; }
+
+/* ── PANEL ──────────────────────────────────────────────── */
+.panel {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:18px 20px;
+  box-shadow:var(--shadow-sm);
+}
+
+.panel-hd {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px;
+}
+
+.panel-title { font-size:14px; font-weight:700; color:var(--navy); }
+
+.panel-tag {
+  font-family:var(--mono); font-size:10px;
+  padding:3px 9px; border-radius:20px;
+  background:var(--bg-input); color:var(--t3);
+  border:1px solid var(--border);
+  font-weight:500;
+}
+
+/* ── UTIL BAR ───────────────────────────────────────────── */
+.util-wrap {
+  border:1px solid var(--border); border-radius:6px;
+  overflow:hidden; height:32px; display:flex;
+  margin-bottom:9px; background:var(--bg-input);
+}
+
+.util-used {
+  background:var(--accent); height:100%;
+  display:flex; align-items:center; padding:0 12px;
+  font-family:var(--mono); font-size:11px; font-weight:600;
+  color:#fff;
+  transition:width 1.3s cubic-bezier(.16,1,.3,1);
+  white-space:nowrap; overflow:hidden;
+}
+
+.util-waste {
+  flex:1; height:100%;
+  background:repeating-linear-gradient(-45deg,rgba(220,38,38,.12),rgba(220,38,38,.12) 2px,transparent 2px,transparent 8px);
+  border-left:2px solid rgba(220,38,38,.25);
+  display:flex; align-items:center; justify-content:flex-end; padding:0 12px;
+  font-family:var(--mono); font-size:11px; color:var(--red); font-weight:500;
+}
+
+.util-legend {
+  display:flex; justify-content:space-between;
+  font-size:12px; color:var(--t3);
+}
+
+/* ── CHART WRAP ─────────────────────────────────────────── */
+.cw { position:relative; width:100%; }
+.cw canvas { width:100% !important; }
+
+/* ── TABLE CONTROLS ─────────────────────────────────────── */
+.tbl-ctrl {
+  display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;
+}
+
+.si {
+  flex:1; min-width:160px;
+  padding:8px 12px;
+  background:var(--bg-panel); border:1px solid var(--border);
+  border-radius:var(--r); color:var(--t1);
+  font-family:var(--sans); font-size:13px; outline:none;
+  transition:border-color .13s, box-shadow .13s;
+  box-shadow:var(--shadow-sm);
+}
+.si:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+.si::placeholder { color:var(--t4); }
+
+.sel {
+  padding:8px 10px;
+  background:var(--bg-panel); border:1px solid var(--border);
+  border-radius:var(--r); color:var(--t1);
+  font-size:13px; font-family:var(--sans); outline:none; cursor:pointer;
+  box-shadow:var(--shadow-sm);
+}
+.sel:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,0.12); }
+
+/* ── DATA TABLE ─────────────────────────────────────────── */
+.tw { overflow-x:auto; border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow-sm); }
+
+.dt { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+
+.dt thead th {
+  padding:11px 14px;
+  background:var(--bg-input);
+  font-size:11px; font-weight:700; letter-spacing:0.4px;
+  text-transform:uppercase; color:var(--t3);
+  border-bottom:2px solid var(--border);
+  white-space:nowrap; cursor:pointer; user-select:none;
+  transition:color .1s;
+}
+.dt thead th:hover { color:var(--navy); }
+
+.dt tbody td {
+  padding:11px 14px;
+  border-bottom:1px solid var(--border);
+  font-family:var(--mono); color:var(--t2); white-space:nowrap;
+  font-size:13px;
+}
+.dt tbody tr:last-child td { border-bottom:none; }
+.dt tbody tr:hover td { background:var(--bg-hover); color:var(--navy); cursor:pointer; }
+
+.c-id   { color:var(--accent) !important; font-weight:600; }
+.c-good { color:var(--green)  !important; font-weight:600; }
+.c-warn { color:var(--amber)  !important; font-weight:600; }
+.c-bad  { color:var(--red)    !important; font-weight:600; }
+.c-dim  { color:var(--t3)     !important; }
+
+.btag {
+  display:inline-block; padding:2px 7px; border-radius:4px;
+  font-size:11px; font-weight:600; margin-right:3px;
+  font-family:var(--mono);
+}
+.bt6  { background:var(--accent-light); color:var(--accent); border:1px solid rgba(37,99,235,.2); }
+.bt8  { background:var(--green-light);  color:var(--green);  border:1px solid rgba(22,163,74,.2); }
+.bt13 { background:var(--red-light);    color:var(--red);    border:1px solid rgba(220,38,38,.2); }
+
+/* ── PAGINATION ─────────────────────────────────────────── */
+.pag { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+.pag-info { font-size:12px; color:var(--t3); }
+.pag-btns { display:flex; gap:4px; }
+
+.pb {
+  width:32px; height:32px; border-radius:6px;
+  border:1px solid var(--border); background:var(--bg-panel);
+  color:var(--t2); font-size:12px; cursor:pointer;
+  font-family:var(--sans); font-weight:500; transition:all .1s;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-sm);
+}
+.pb:hover, .pb.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.pb:disabled { opacity:.3; cursor:not-allowed; box-shadow:none; }
+
+/* ── STATUS DOT ─────────────────────────────────────────── */
+.sdot { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:6px; }
+.sd-g { background:var(--green); }
+.sd-a { background:var(--amber); }
+.sd-r { background:var(--red); }
+
+/* ── CHIP ───────────────────────────────────────────────── */
+.chip {
+  display:inline-flex; align-items:center;
+  padding:3px 9px; border-radius:20px;
+  font-size:11px; font-weight:600;
+  font-family:var(--sans); letter-spacing:.2px;
+}
+.cg { background:var(--green-light); color:var(--green); border:1px solid rgba(22,163,74,.25); }
+.ca { background:var(--amber-light); color:var(--amber); border:1px solid rgba(217,119,6,.25); }
+.cr { background:var(--red-light);   color:var(--red);   border:1px solid rgba(220,38,38,.25); }
+.cb { background:var(--accent-light);color:var(--accent);border:1px solid rgba(37,99,235,.25); }
+
+/* ── PROGRESS BAR ───────────────────────────────────────── */
+.pbar { height:5px; background:var(--border); border-radius:3px; overflow:hidden; margin:6px 0 3px; }
+.pbar-fill { height:100%; border-radius:3px; transition:width .8s cubic-bezier(.16,1,.3,1); }
+
+/* ── DRAWER ─────────────────────────────────────────────── */
+.drawer {
+  position:fixed; right:0; top:0; bottom:0; width:380px;
+  background:var(--bg-panel); border-left:2px solid var(--border);
+  z-index:200; transform:translateX(100%);
+  transition:transform .26s cubic-bezier(.16,1,.3,1);
+  display:flex; flex-direction:column;
+  box-shadow:-8px 0 32px rgba(15,23,42,0.1);
+}
+.drawer.open { transform:translateX(0); }
+
+.drw-hd {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:2px solid var(--border); flex-shrink:0;
+  background:var(--navy);
+}
+.drw-title { font-size:15px; font-weight:700; color:#fff; }
+
+.drw-close {
+  width:28px; height:28px; border-radius:6px;
+  border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.7); cursor:pointer; font-size:12px;
+  display:flex; align-items:center; justify-content:center; transition:all .1s;
+}
+.drw-close:hover { background:#DC2626; color:#fff; border-color:#DC2626; }
+
+.drw-body { flex:1; overflow-y:auto; padding:20px; }
+
+.drw-sec { margin-bottom:20px; }
+.drw-sec-title {
+  font-size:11px; font-weight:700; letter-spacing:0.5px;
+  text-transform:uppercase; color:var(--t3); margin-bottom:10px;
+  padding-bottom:6px; border-bottom:1px solid var(--border);
+}
+.drw-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px solid rgba(226,230,236,.6); font-size:13px;
+}
+.drw-row:last-child { border-bottom:none; }
+.drw-row-lbl { color:var(--t3); font-weight:500; }
+.drw-row-val { font-family:var(--mono); color:var(--navy); font-weight:600; font-size:14px; }
+
+/* ── NEST VIEW ──────────────────────────────────────────── */
+.nest-layout {
+  display:grid; grid-template-columns:290px 1fr;
+  gap:14px; height:calc(100vh - 160px);
+}
+
+.nest-sidebar {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--r2); box-shadow:var(--shadow-sm);
+  display:flex; flex-direction:column; overflow:hidden; padding:14px;
+}
+
+.nest-detail {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--r2); overflow-y:auto; padding:20px;
+  box-shadow:var(--shadow-sm);
+}
+
+.nest-list { flex:1; overflow-y:auto; margin-top:10px; }
+
+.nest-item {
+  padding:10px 12px; border-radius:var(--r);
+  cursor:pointer; border:1px solid transparent;
+  transition:all .1s; margin-bottom:4px;
+}
+.nest-item:hover { background:var(--bg-hover); border-color:var(--border); }
+.nest-item.selected { background:var(--accent-light); border-color:rgba(37,99,235,.3); }
+
+.ni-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+.ni-id { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); }
+.ni-cnt { font-size:10px; color:var(--t3); background:var(--bg-input); padding:2px 7px; border-radius:10px; font-family:var(--mono); border:1px solid var(--border); }
+
+.ni-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.ni-bar-fill { height:100%; border-radius:2px; }
+
+.ni-meta { font-size:11px; color:var(--t3); margin-top:5px; font-family:var(--mono); line-height:1.7; }
+
+/* waste compare bars in nest detail */
+.wc-row { display:flex; align-items:center; gap:10px; margin:5px 0; }
+.wc-lbl { font-size:11px; color:var(--t3); width:60px; flex-shrink:0; font-family:var(--mono); font-weight:500; }
+.wc-track { flex:1; height:14px; background:var(--border); border-radius:3px; overflow:hidden; }
+.wc-fill  { height:100%; border-radius:3px; transition:width .7s; }
+.wc-num   { font-family:var(--mono); font-size:11px; width:75px; text-align:right; font-weight:600; }
+
+/* ── BEAM VISUALIZER ────────────────────────────────────── */
+.beam-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.beam-lbl { font-family:var(--mono); font-size:10px; color:var(--t3); width:82px; text-align:right; flex-shrink:0; font-weight:500; }
+.beam-track { flex:1; height:26px; background:var(--bg-input); border-radius:4px; overflow:visible; position:relative; border:1px solid var(--border); }
+.beam-used {
+  position:absolute; left:0; top:0; bottom:0;
+  display:flex; align-items:center; overflow:hidden;
+  padding:0 8px; font-family:var(--mono); font-size:10px;
+  color:#fff; font-weight:500;
+}
+.beam-waste {
+  position:absolute; right:0; top:0; bottom:0;
+  background:repeating-linear-gradient(-45deg,rgba(220,38,38,.2),rgba(220,38,38,.2) 2px,transparent 2px,transparent 6px);
+  border-left:2px solid rgba(220,38,38,.3);
+  display:flex; align-items:center; justify-content:flex-end; padding:0 5px;
+  font-family:var(--mono); font-size:9px; color:var(--red); font-weight:600;
+}
+.beam-gap {
+  position:absolute; top:-3px; bottom:-3px;
+  background:var(--bg); border-left:1px dashed var(--border-hi);
+}
+.beam-size { width:58px; font-family:var(--mono); font-size:10px; color:var(--t3); flex-shrink:0; font-weight:500; }
+
+/* ── DIVIDER ────────────────────────────────────────────── */
+.sec-div {
+  font-size:11px; font-weight:700; letter-spacing:.5px;
+  text-transform:uppercase; color:var(--t3);
+  display:flex; align-items:center; gap:8px;
+  margin:16px 0 12px;
+}
+.sec-div::after { content:''; flex:1; height:2px; background:var(--border); }
+
+input[type=range] { accent-color:var(--accent); width:100%; cursor:pointer; }
+
+/* ── STATUS BADGE IN TABLE ──────────────────────────────── */
+.status-badge {
+  display:inline-flex; align-items:center;
+  padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:600;
+  font-family:var(--sans);
+}
+.sb-optimal  { background:#DCFCE7; color:#166534; }
+.sb-good     { background:#FEF9C3; color:#854D0E; }
+.sb-review   { background:#FEF3C7; color:#92400E; }
+.sb-highwaste{ background:#FEE2E2; color:#991B1B; }
+
+/* ── SUMMARY ROW ABOVE TABLE ────────────────────────────── */
+.tbl-summary {
+  display:flex; gap:20px; align-items:center;
+  font-size:12px; color:var(--t3); margin-bottom:10px;
+  font-weight:500;
+}
+.tbl-summary strong { color:var(--navy); font-weight:700; }
+
+/* ── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fu { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.fu  { animation:fu .35s ease both; }
+.fu1 { animation-delay:.05s; }
+.fu2 { animation-delay:.10s; }
+.fu3 { animation-delay:.15s; }
+.fu4 { animation-delay:.20s; }
+.fu5 { animation-delay:.25s; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     UPLOAD SCREEN
+     ══════════════════════════════════════════════════════════ -->
+<div id="upload-screen">
+  <div class="upload-card">
+    <div class="upload-hdr">
+      <div class="upload-logo">BO</div>
+      <div>
+        <div class="upload-title">BeamOpt Dashboard</div>
+        <div class="upload-sub">Beam cutting optimisation · SDGP 2025–26</div>
+      </div>
+    </div>
+
+    <div class="upload-sec">
+      <div class="upload-lbl">Repository Data</div>
+      <div class="upload-desc">Beam_Repository_DATA.csv</div>
+      <div class="dropzone" id="dz-repo"
+           onclick="document.getElementById('fi-repo').click()"
+           ondragover="onDrag(event,'dz-repo',true)"
+           ondragleave="onDrag(event,'dz-repo',false)"
+           ondrop="onDrop(event,'repo')">
+        <div class="dz-icon" id="ico-repo">📂</div>
+        <div style="flex:1;min-width:0">
+          <div class="dz-main" id="dz-repo-name">Click or drag to upload</div>
+          <div class="dz-hint">NestID · Length · TotalLength · ItemNumber · RemainingLength</div>
+        </div>
+      </div>
+      <input type="file" id="fi-repo" accept=".csv" onchange="onFilePick(event,'repo')">
+    </div>
+
+    <div class="upload-err" id="upload-err"></div>
+    <button class="go-btn" id="go-btn" disabled onclick="launch()">Load Dashboard →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN APP
+     ══════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <div id="titlebar">
+    <div class="tb-l">
+      <div class="tb-logo">BO</div>
+      <div class="tb-name">BEAMOPT</div>
+      <div class="tb-sep"></div>
+      <div class="tb-session" id="tb-sess">—</div>
+    </div>
+    <div class="tb-r">
+      <button class="reload-btn" onclick="resetToUpload()">↺ New files</button>
+      <button class="wc" onclick="electronAPI.minimize()">─</button>
+      <button class="wc" onclick="electronAPI.maximize()">□</button>
+      <button class="wc close" onclick="electronAPI.close()">✕</button>
+    </div>
+  </div>
+
+  <div id="nav">
+    <button class="nav-tab active" onclick="gotoPage('overview')">Overview</button>
+    <button class="nav-tab" onclick="gotoPage('batches')">Batch View</button>
+    <button class="nav-tab" onclick="gotoPage('nests')">Nest View</button>
+    <button class="nav-tab" onclick="gotoPage('visualizer')">Beam Visualizer</button>
+    <div class="nav-sp"></div>
+    <button class="export-btn" onclick="doExport()">↓ Export CSV</button>
+    <button class="export-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+  </div>
+
+  <div id="content">
+
+    <!-- ════ OVERVIEW ════ -->
+    <div class="page active" id="page-overview">
+
+      <div class="kpi-strip">
+        <div class="kpi fu">
+          <div class="kpi-lbl">Efficiency</div>
+          <div class="kpi-val g" id="kv-eff">—</div>
+          <div class="kpi-meta" id="km-eff">material utilisation</div>
+          <div class="kpi-rule" style="background:var(--green)"></div>
+        </div>
+        <div class="kpi fu fu1">
+          <div class="kpi-lbl">Waste Saved</div>
+          <div class="kpi-val g" id="kv-saved">—</div>
+          <div class="kpi-meta" id="km-saved">vs original</div>
+          <div class="kpi-rule" style="background:var(--green);opacity:.5"></div>
+        </div>
+        <div class="kpi fu fu2">
+          <div class="kpi-lbl">Optimised Waste</div>
+          <div class="kpi-val r" id="kv-waste">—</div>
+          <div class="kpi-meta">was <span id="kv-old-waste" style="color:var(--red);font-weight:600">—</span></div>
+          <div class="kpi-rule" style="background:var(--red);opacity:.4"></div>
+        </div>
+        <div class="kpi fu fu3">
+          <div class="kpi-lbl">Total Batches</div>
+          <div class="kpi-val" id="kv-batches">—</div>
+          <div class="kpi-meta">unique cut lengths</div>
+          <div class="kpi-rule" style="background:var(--accent);opacity:.4"></div>
+        </div>
+        <div class="kpi fu fu4">
+          <div class="kpi-lbl">Total Beams</div>
+          <div class="kpi-val" id="kv-beams">—</div>
+          <div class="kpi-meta" id="km-beams">—</div>
+          <div class="kpi-rule" style="background:var(--accent);opacity:.25"></div>
+        </div>
+        <div class="kpi fu fu5">
+          <div class="kpi-lbl">Zero-Waste Batches</div>
+          <div class="kpi-val g" id="kv-zero">—</div>
+          <div class="kpi-meta" id="km-zero">perfect cuts</div>
+          <div class="kpi-rule" style="background:var(--green);opacity:.4"></div>
+        </div>
+      </div>
+
+      <!-- UTIL BAR -->
+      <div class="panel fu" style="margin-bottom:14px">
+        <div class="panel-hd">
+          <span class="panel-title">Material Utilisation</span>
+          <span class="panel-tag" id="util-tag">—</span>
+        </div>
+        <div class="util-wrap">
+          <div class="util-used" id="util-used" style="width:0%">—</div>
+          <div class="util-waste" id="util-waste">—</div>
+        </div>
+        <div class="util-legend">
+          <span>Used: <strong id="ul-used" style="color:var(--navy)">—</strong></span>
+          <span><strong id="ul-pct" style="color:var(--accent)">—</strong> efficiency</span>
+          <span>Waste: <strong id="ul-waste" style="color:var(--red)">—</strong></span>
+          <span>Purchased: <strong id="ul-total" style="color:var(--navy)">—</strong></span>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 1 -->
+      <div class="g2 fu1">
+        <div class="panel">
+          <div class="panel-hd">
+            <span class="panel-title">Waste by Batch — Top 60</span>
+            <span class="panel-tag">mm</span>
+          </div>
+          <div class="cw" style="height:230px"><canvas id="ch-w60"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd">
+            <span class="panel-title">Beam Type Composition</span>
+            <span class="panel-tag" id="ch-beam-tag">—</span>
+          </div>
+          <div class="cw" style="height:230px;display:flex;align-items:center"><canvas id="ch-pie"></canvas></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 2 -->
+      <div class="g2 fu2">
+        <div class="panel">
+          <div class="panel-hd">
+            <span class="panel-title">Waste Range Distribution</span>
+            <span class="panel-tag">batches per range</span>
+          </div>
+          <div class="cw" style="height:190px"><canvas id="ch-buckets"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd">
+            <span class="panel-title">Cumulative Efficiency</span>
+            <span class="panel-tag">all batches</span>
+          </div>
+          <div class="cw" style="height:190px"><canvas id="ch-cum"></canvas></div>
+        </div>
+      </div>
+
+    </div><!-- /overview -->
+
+    <!-- ════ BATCH VIEW ════ -->
+    <div class="page" id="page-batches">
+      <div class="tbl-ctrl">
+        <input class="si" id="b-search" placeholder="🔍  Search batch ID, length…">
+        <select class="sel" id="b-beam" onchange="renderBT()">
+          <option value="">All beam types</option>
+          <option value="6">6 000 mm</option>
+          <option value="8">8 000 mm</option>
+          <option value="13">13 000 mm</option>
+        </select>
+        <select class="sel" id="b-waste" onchange="renderBT()">
+          <option value="">All waste levels</option>
+          <option value="0">Zero waste</option>
+          <option value="lo">Low (&lt;500 mm)</option>
+          <option value="md">Medium (500–2 000)</option>
+          <option value="hi">High (&gt;2 000)</option>
+        </select>
+        <select class="sel" id="b-sort" onchange="renderBT()">
+          <option value="id-a">Batch ID ↑</option>
+          <option value="id-d">Batch ID ↓</option>
+          <option value="ws-d">Waste ↓</option>
+          <option value="ws-a">Waste ↑</option>
+          <option value="ln-a">Length ↑</option>
+          <option value="ef-d">Efficiency ↓</option>
+        </select>
+      </div>
+      <div class="tw">
+        <table class="dt">
+          <thead><tr>
+            <th>Batch</th><th>Length (mm)</th><th>Items</th>
+            <th>Required (mm)</th><th>Beams</th>
+            <th>6000mm</th><th>8000mm</th><th>13000mm</th>
+            <th>Waste (mm)</th><th>Efficiency</th><th>Status</th>
+          </tr></thead>
+          <tbody id="b-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pag">
+        <div class="pag-info" id="b-pag-info"></div>
+        <div class="pag-btns" id="b-pag-btns"></div>
+      </div>
+    </div><!-- /batches -->
+
+    <!-- ════ NEST VIEW ════ -->
+    <div class="page" id="page-nests">
+      <div class="nest-layout">
+        <div class="nest-sidebar">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span class="panel-title">Nest IDs</span>
+            <span class="panel-tag" id="nest-badge">—</span>
+          </div>
+          <input class="si" id="nest-search" placeholder="🔍  Search nest ID…" style="width:100%">
+          <div class="nest-list" id="nest-list"></div>
+        </div>
+        <div class="nest-detail" id="nest-detail">
+          <div id="nest-ph" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--t3)">
+            <div style="font-size:48px;opacity:.12;margin-bottom:12px">⊞</div>
+            <div style="font-size:14px;font-weight:500;color:var(--t4)">Select a nest to view detail</div>
+          </div>
+          <div id="nest-ct" style="display:none"></div>
+        </div>
+      </div>
+    </div><!-- /nests -->
+
+    <!-- ════ BEAM VISUALIZER ════ -->
+    <div class="page" id="page-visualizer">
+
+      <div class="panel fu" style="margin-bottom:14px">
+        <div class="panel-hd">
+          <span class="panel-title">Batch Selector</span>
+          <span class="panel-tag" id="viz-eff">—</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:16px;align-items:end">
+          <div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">BATCH</div>
+            <select class="sel" id="viz-sel" onchange="renderViz()" style="width:100%">
+              <option value="">— select batch —</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+              JUMP &nbsp;<span id="viz-slbl" style="color:var(--accent)">—</span>
+            </div>
+            <input type="range" id="viz-slider" min="1" max="100" value="1" oninput="onVizSlide(this.value)">
+          </div>
+          <div id="viz-qs" style="font-size:13px;color:var(--t2);text-align:right;line-height:2;font-weight:500"></div>
+        </div>
+      </div>
+
+      <div class="panel fu1" style="margin-bottom:14px">
+        <div class="panel-hd">
+          <span class="panel-title">Cut Pattern</span>
+          <span class="panel-tag">scaled · max 13 000 mm</span>
+        </div>
+        <div id="viz-ct">
+          <div style="text-align:center;padding:52px;color:var(--t3);font-size:13px;font-weight:500">
+            Select a batch above to render its cutting pattern
+          </div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="panel fu2">
+          <div class="panel-hd">
+            <span class="panel-title">Neighbouring Batch Waste</span>
+            <span class="panel-tag">±10 batches</span>
+          </div>
+          <div class="cw" style="height:190px"><canvas id="ch-nbr"></canvas></div>
+        </div>
+        <div class="panel fu2">
+          <div class="panel-hd">
+            <span class="panel-title">Cumulative Efficiency</span>
+            <span class="panel-tag">all batches</span>
+          </div>
+          <div class="cw" style="height:190px"><canvas id="ch-vcum"></canvas></div>
+        </div>
+      </div>
+
+    </div><!-- /visualizer -->
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- BATCH DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drw-hd">
+    <span class="drw-title" id="drw-ttl">Batch Detail</span>
+    <button class="drw-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drw-body" id="drw-body"></div>
+</div>
+
+<script type="text/javascript">
+// ============================================================
+// STATE
+// ============================================================
+let RD = [];          // resultsData
+let repoRaw = [];     // raw repo rows
+let nestMap = {};     // nestID → items[]
+let batchByLen = {};  // length → batch
+let BF = [];          // batch filtered
+let bPage = 1;
+const PG = 50;
+let charts = {};
+let rawRepo = null, rawRes = null;
+
+// ============================================================
+// UPLOAD
+// ============================================================
+function onDrag(e, id, over) {
+  e.preventDefault();
+  document.getElementById(id).classList.toggle('drag-over', over);
+}
+
+function onDrop(e, which) {
+  e.preventDefault();
+  const id = which === 'repo' ? 'dz-repo' : 'dz-res';
+  document.getElementById(id).classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) readFile(f, which);
+}
+
+function onFilePick(e, which) {
+  const f = e.target.files[0];
+  if (f) readFile(f, which);
+}
+
+function readFile(file, which) {
+  const r = new FileReader();
+  r.onload = ev => {
+    if (which === 'repo') {
+      rawRepo = ev.target.result;
+      markLoaded('dz-repo','ico-repo','dz-repo-name', file.name);
+    } else {
+      rawRes = ev.target.result;
+      markLoaded('dz-res','ico-res','dz-res-name', file.name);
+    }
+    document.getElementById('go-btn').disabled = !rawRepo;
+  };
+  r.readAsText(file);
+}
+
+function markLoaded(dzId, icoId, nameId, name) {
+  document.getElementById(dzId).classList.add('loaded');
+  document.getElementById(icoId).textContent = '✓';
+  document.getElementById(nameId).textContent = name;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].replace(/\r/g,'').split(',').map(h=>h.trim());
+  return lines.slice(1).map(line => {
+    const vals = line.replace(/\r/g,'').split(',');
+    const row = {};
+    headers.forEach((h,i) => row[h] = (vals[i]||'').trim());
+    return row;
+  }).filter(r => Object.values(r).some(v=>v));
+}
+
+async function launch() {
+  const errEl = document.getElementById('upload-err');
+  errEl.style.display = 'none';
+  try {
+    const repoData = parseCSV(rawRepo);
+    const result = await window.electronAPI.runAlgorithm(repoData);
+    processData(repoData, result);
+
+  document.getElementById('upload-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  renderAll();
+} catch (err) {
+    console.error(err);
+    errEl.textContent = 'Error processing files: '+err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function resetToUpload() {
+  rawRepo = null;
+  RD = []; 
+  repoRaw = []; 
+  nestMap = {}; 
+  batchByLen = {};
+  document.getElementById('dz-repo').classList.remove('loaded','drag-over');
+  document.getElementById('dz-repo-name').textContent = 'Click or drag to upload';
+  document.getElementById('ico-repo').textContent = '📂';
+  document.getElementById('fi-repo').value = '';
+  document.getElementById('upload-err').style.display = 'none';
+  document.getElementById('go-btn').disabled = true;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('upload-screen').style.display = 'flex';
+  Object.values(charts).forEach(c => c && c.destroy());
+  charts = {};
+}
+
+// ============================================================
+// DATA PROCESSING
+// ============================================================
+function processData(repo, res) {
+  RD = res.map(r => {
+    const a=+r.a, b=+r.b, c=+r.c, X=+r.X;
+    const p = a*6000 + b*8000 + c*13000;
+    return {
+      BatchID:+r.BatchID, Length:+r.Length, RowCount:+r.RowCount,
+      X, a, b, c, Remaining:+r.Remaining,
+      totalBeams:a+b+c, purchased:p,
+      efficiency: p>0 ? X/p*100 : 0
+    };
+  });
+
+  RD.forEach(r => { batchByLen[r.Length] = r; });
+
+  nestMap = {};
+  repoRaw = repo;
+  repo.forEach(r => {
+    const nid = r.NestID;
+    if (!nestMap[nid]) nestMap[nid] = [];
+    nestMap[nid].push({
+      Length:+r.Length, TotalLength:+r.TotalLength,
+      ItemNumber:r.ItemNumber,
+      OldRemaining: Math.round(parseFloat(r.RemainingLength)||0)
+    });
+  });
+
+  BF = [...RD];
+  setText('tb-sess', `${RD.length.toLocaleString()} batches · ${Object.keys(nestMap).length.toLocaleString()} nests · ${repo.length.toLocaleString()} items`);
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+  renderKPIs();
+  renderOverviewCharts();
+  renderBT();
+  renderNestList();
+  populateVizSel();
+  renderCum('ch-cum');
+  renderCum('ch-vcum');
+}
+
+// ============================================================
+// KPIs
+// ============================================================
+function renderKPIs() {
+  const P    = sum(RD, r=>r.purchased);
+  const N    = sum(RD, r=>r.X);
+  const W    = sum(RD, r=>r.Remaining);
+  const OW   = sum(repoRaw, r=>Math.round(parseFloat(r.RemainingLength)||0));
+  const eff  = P>0 ? N/P*100 : 0;
+  const saved= OW - W;
+  const red  = OW>0 ? saved/OW*100 : 0;
+  const TB   = sum(RD, r=>r.totalBeams);
+  const zero = RD.filter(r=>r.Remaining===0).length;
+  const a6   = sum(RD,r=>r.a), b8=sum(RD,r=>r.b), c13=sum(RD,r=>r.c);
+
+  setText('kv-eff',       eff.toFixed(2)+'%');
+  setText('km-eff',       red.toFixed(1)+'% reduction in waste');
+  setText('kv-saved',     fmm(saved));
+  setText('km-saved',     '−'+red.toFixed(1)+'% vs original algorithm');
+  setText('kv-waste',     fmm(W));
+  setText('kv-old-waste', fmm(OW));
+  setText('kv-batches',   RD.length.toLocaleString());
+  setText('kv-beams',     TB.toLocaleString());
+  setText('km-beams',     `6k:${a6.toLocaleString()}  8k:${b8.toLocaleString()}  13k:${c13.toLocaleString()}`);
+  setText('kv-zero',      zero.toLocaleString());
+  setText('km-zero',      (zero/RD.length*100).toFixed(1)+'% of all batches');
+
+  const usedPct = Math.min(100, eff);
+  const wastePct = 100 - usedPct;
+  const ub = document.getElementById('util-used');
+  if(ub){ ub.style.width=usedPct.toFixed(3)+'%'; ub.textContent=usedPct.toFixed(2)+'% utilised'; }
+  const wb = document.getElementById('util-waste');
+  if(wb) wb.textContent=wastePct.toFixed(3)+'% waste';
+
+  setText('util-tag', eff.toFixed(4)+'%');
+  setText('ul-used',  fmm(N));
+  setText('ul-pct',   eff.toFixed(2)+'%');
+  setText('ul-waste', fmm(W));
+  setText('ul-total', fmm(P));
+  setText('ch-beam-tag', TB.toLocaleString()+' beams total');
+}
+
+// ============================================================
+// OVERVIEW CHARTS
+// ============================================================
+function renderOverviewCharts() {
+  // Top-60 waste (sorted desc)
+  const top60 = [...RD].sort((a,b)=>b.Remaining-a.Remaining).slice(0,60);
+  const wc = top60.map(r=>
+    r.Remaining===0?'#16A34A':r.Remaining<1000?'#2563EB':r.Remaining<5000?'#D97706':'#DC2626'
+  );
+  mkChart('ch-w60','bar',{
+    labels:top60.map(r=>'B'+r.BatchID),
+    datasets:[{label:'Waste (mm)',data:top60.map(r=>r.Remaining),
+      backgroundColor:wc,borderRadius:3,borderSkipped:false}]
+  },{plugins:{legend:{display:false}},
+     scales:{x:{ticks:{maxRotation:0,color:'#6B7280',font:{size:10}},grid:{display:false}},
+             y:{ticks:{color:'#6B7280',font:{size:10}},grid:{color:'#E2E6EC'}}}});
+
+  // Doughnut
+  const a=sum(RD,r=>r.a),b=sum(RD,r=>r.b),c=sum(RD,r=>r.c);
+  mkChart('ch-pie','doughnut',{
+    labels:['6 000 mm','8 000 mm','13 000 mm'],
+    datasets:[{data:[a,b,c],
+      backgroundColor:['#2563EB','#16A34A','#DC2626'],
+      borderColor: getComputedStyle(document.body).getPropertyValue('--bg-panel').trim(), borderWidth:3,hoverOffset:5}]
+  },{plugins:{legend:{position:'right',
+      labels:{color:'#374151',font:{family:"'DM Sans'",size:12},padding:14,boxWidth:12}}},
+    cutout:'65%'});
+
+  // Waste buckets
+  const bk={'0':0,'1–500':0,'501–1k':0,'1k–2k':0,'2k–5k':0,'5k+':0};
+  RD.forEach(r=>{
+    const w=r.Remaining;
+    if(w===0)        bk['0']++;
+    else if(w<=500)  bk['1–500']++;
+    else if(w<=1000) bk['501–1k']++;
+    else if(w<=2000) bk['1k–2k']++;
+    else if(w<=5000) bk['2k–5k']++;
+    else             bk['5k+']++;
+  });
+  mkChart('ch-buckets','bar',{
+    labels:Object.keys(bk),
+    datasets:[{label:'Batches',data:Object.values(bk),
+      backgroundColor:['#16A34A','#2563EB','#2563EB','#D97706','#D97706','#DC2626'],
+      borderRadius:4,borderSkipped:false}]
+  },{plugins:{legend:{display:false}},
+     scales:{x:{ticks:{color:'#6B7280',font:{size:11}},grid:{display:false}},
+             y:{ticks:{color:'#6B7280',font:{size:11}},grid:{color:'#E2E6EC'}}}});
+}
+
+function renderCum(canvasId) {
+  let cN=0,cP=0;
+  const step=Math.max(1,Math.floor(RD.length/80));
+  const labels=[],data=[];
+  RD.forEach((r,i)=>{
+    cN+=r.X; cP+=r.purchased;
+    if(i%step===0||i===RD.length-1){
+      labels.push('B'+r.BatchID);
+      data.push(+(cN/cP*100).toFixed(4));
+    }
+  });
+  mkChart(canvasId,'line',{
+    labels,
+    datasets:[{data,borderColor:'#16A34A',backgroundColor:'rgba(22,163,74,.07)',
+      borderWidth:2,pointRadius:0,tension:.4,fill:true}]
+  },{plugins:{legend:{display:false}},
+     scales:{x:{ticks:{color:'#6B7280',font:{size:10},maxTicksLimit:6},grid:{display:false}},
+             y:{min:97,max:100,ticks:{color:'#6B7280',font:{size:10},callback:v=>v+'%'},grid:{color:'#E2E6EC'}}}});
+}
+
+// ============================================================
+// BATCH TABLE
+// ============================================================
+function renderBT() {
+  const srch = (document.getElementById('b-search')?.value||'').toLowerCase();
+  const bf   = document.getElementById('b-beam')?.value||'';
+  const wf   = document.getElementById('b-waste')?.value||'';
+  const sf   = document.getElementById('b-sort')?.value||'id-a';
+
+  let f = RD.filter(r=>{
+    if(srch && !`${r.BatchID} ${r.Length}`.toLowerCase().includes(srch)) return false;
+    if(bf==='6'  && r.a===0) return false;
+    if(bf==='8'  && r.b===0) return false;
+    if(bf==='13' && r.c===0) return false;
+    const w=r.Remaining;
+    if(wf==='0'  && w!==0) return false;
+    if(wf==='lo' && (w<1||w>500)) return false;
+    if(wf==='md' && (w<500||w>2000)) return false;
+    if(wf==='hi' && w<=2000) return false;
+    return true;
+  });
+
+  const [sc,sd]=sf.split('-');
+  const col={id:'BatchID',ws:'Remaining',ln:'Length',ef:'efficiency'}[sc]||'BatchID';
+  const m=sd==='d'?-1:1;
+  f.sort((a,b)=>(a[col]-b[col])*m);
+
+  BF=f; bPage=1; renderBPage();
+}
+
+function renderBPage() {
+  const total=BF.length, totalPg=Math.ceil(total/PG);
+  const start=(bPage-1)*PG;
+  const slice=BF.slice(start,start+PG);
+
+  document.getElementById('b-tbody').innerHTML=slice.map(r=>{
+    const eff=r.purchased>0?(r.X/r.purchased*100).toFixed(1):'—';
+    const wCls=r.Remaining===0?'c-good':r.Remaining<1000?'c-id':r.Remaining<5000?'c-warn':'c-bad';
+    const eCls=+eff>=99?'c-good':+eff>=95?'c-id':'c-warn';
+    const sDot=r.Remaining===0?'sd-g':r.Remaining<3000?'sd-a':'sd-r';
+    const tags=[
+      r.a>0?`<span class="btag bt6">${r.a}×6k</span>`:'',
+      r.b>0?`<span class="btag bt8">${r.b}×8k</span>`:'',
+      r.c>0?`<span class="btag bt13">${r.c}×13k</span>`:'',
+    ].filter(Boolean).join('');
+
+    let statusBadge, statusLabel;
+    if(r.Remaining===0){ statusBadge='sb-optimal'; statusLabel='Optimal'; }
+    else if(r.Remaining<500){ statusBadge='sb-good'; statusLabel='Near optimal'; }
+    else if(r.Remaining<2000){ statusBadge='sb-review'; statusLabel='Review'; }
+    else { statusBadge='sb-highwaste'; statusLabel='High waste'; }
+
+    return `<tr onclick="openDrawer(${r.BatchID})">
+      <td class="c-id">#${r.BatchID}</td>
+      <td>${r.Length.toLocaleString()}</td>
+      <td class="c-dim">${r.RowCount}</td>
+      <td>${r.X.toLocaleString()}</td>
+      <td>${tags||'—'}</td>
+      <td class="c-dim">${r.a||'—'}</td>
+      <td class="c-dim">${r.b||'—'}</td>
+      <td class="c-dim">${r.c||'—'}</td>
+      <td class="${wCls}">${r.Remaining.toLocaleString()}</td>
+      <td class="${eCls}">${eff}%</td>
+      <td><span class="status-badge ${statusBadge}"><span class="sdot ${sDot}"></span>${statusLabel}</span></td>
+    </tr>`;
+  }).join('');
+
+  setText('b-pag-info',`${start+1}–${Math.min(start+PG,total)} of ${total.toLocaleString()}`);
+
+  const btns=document.getElementById('b-pag-btns');
+  btns.innerHTML='';
+  const prev=mkpb('←',bPage===1,()=>{bPage--;renderBPage();});
+  btns.appendChild(prev);
+  pageRange(bPage,totalPg).forEach(p=>{
+    const b=mkpb(p==='...'?'…':String(p),false,()=>{if(p!=='...'){bPage=p;renderBPage();}});
+    if(p===bPage)b.classList.add('active');
+    btns.appendChild(b);
+  });
+  btns.appendChild(mkpb('→',bPage===totalPg,()=>{bPage++;renderBPage();}));
+}
+
+function mkpb(txt,dis,fn){
+  const b=document.createElement('button');
+  b.className='pb'; b.textContent=txt; b.disabled=dis; b.onclick=fn;
+  return b;
+}
+
+function pageRange(cur,tot){
+  if(tot<=7)return Array.from({length:tot},(_,i)=>i+1);
+  const p=[1];
+  if(cur>3)p.push('...');
+  for(let i=Math.max(2,cur-1);i<=Math.min(tot-1,cur+1);i++)p.push(i);
+  if(cur<tot-2)p.push('...');
+  p.push(tot);
+  return p;
+}
+
+function setupSearch(){
+  const el=document.getElementById('b-search');
+  if(el)el.addEventListener('input',debounce(renderBT,180));
+}
+
+// ============================================================
+// BATCH DRAWER
+// ============================================================
+function openDrawer(batchId) {
+  const r=RD.find(x=>x.BatchID===batchId);
+  if(!r)return;
+  const eff=r.purchased>0?(r.X/r.purchased*100).toFixed(2):'—';
+  const wChip=r.Remaining===0?'cg':r.Remaining<2000?'cb':'ca';
+  const effCol=+eff>=99?'var(--green)':+eff>=95?'var(--accent)':'var(--amber)';
+
+  setText('drw-ttl',`Batch #${r.BatchID} · ${r.Length.toLocaleString()} mm`);
+  document.getElementById('drw-body').innerHTML=`
+    <div class="drw-sec">
+      <div class="drw-sec-title">Summary</div>
+      <div class="drw-row"><span class="drw-row-lbl">Batch ID</span><span class="drw-row-val c-id">#${r.BatchID}</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">Cut Length</span><span class="drw-row-val">${r.Length.toLocaleString()} mm</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">Items</span><span class="drw-row-val">${r.RowCount}</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">Required</span><span class="drw-row-val">${r.X.toLocaleString()} mm</span></div>
+    </div>
+    <div class="drw-sec">
+      <div class="drw-sec-title">Beam Allocation</div>
+      <div class="drw-row"><span class="drw-row-lbl">6 000 mm</span><span class="drw-row-val" style="color:var(--accent)">${r.a}</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">8 000 mm</span><span class="drw-row-val" style="color:var(--green)">${r.b}</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">13 000 mm</span><span class="drw-row-val" style="color:var(--red)">${r.c}</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">Total beams</span><span class="drw-row-val">${r.totalBeams}</span></div>
+      <div class="drw-row"><span class="drw-row-lbl">Purchased stock</span><span class="drw-row-val">${r.purchased.toLocaleString()} mm</span></div>
+    </div>
+    <div class="drw-sec">
+      <div class="drw-sec-title">Efficiency</div>
+      <div class="drw-row">
+        <span class="drw-row-lbl">Waste</span>
+        <span class="chip ${wChip}">${r.Remaining.toLocaleString()} mm</span>
+      </div>
+      <div class="drw-row">
+        <span class="drw-row-lbl">Efficiency</span>
+        <span class="drw-row-val" style="color:${effCol}">${eff}%</span>
+      </div>
+      <div class="pbar"><div class="pbar-fill" style="width:${eff}%;background:${effCol}"></div></div>
+    </div>
+    <div class="drw-sec">
+      <div class="drw-sec-title">Cut Preview</div>
+      ${beamPreviewHTML(r)}
+    </div>
+    <button class="go-btn" style="width:100%;margin-top:6px" onclick="jumpViz(${r.BatchID})">
+      Open in Visualizer →
+    </button>
+  `;
+  document.getElementById('drawer').classList.add('open');
+}
+
+function beamPreviewHTML(r){
+  const beams=[
+    {lbl:'6000mm',n:r.a,len:6000,col:'var(--accent)'},
+    {lbl:'8000mm',n:r.b,len:8000,col:'var(--green)'},
+    {lbl:'13000mm',n:r.c,len:13000,col:'var(--red)'},
+  ].filter(b=>b.n>0);
+  if(!beams.length)return'<div style="color:var(--t3);font-size:12px">No beams allocated</div>';
+  const MAX=13000;
+  let h=`<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:12px">`;
+  beams.forEach(bm=>{
+    for(let i=0;i<Math.min(bm.n,4);i++){
+      const isLast=(i===bm.n-1)&&(bm===beams[beams.length-1]);
+      const usedPct=isLast?Math.min(100,(r.X-(r.purchased-bm.len))/bm.len*100):100;
+      const wstPct=100-usedPct;
+      const bPct=(bm.len/MAX*100).toFixed(1);
+      h+=`<div class="beam-row">
+        <div class="beam-lbl">${bm.lbl} #${i+1}</div>
+        <div class="beam-track">
+          <div class="beam-used" style="width:${bPct}%;background:${bm.col}">
+            <div style="width:${usedPct.toFixed(0)}%;height:100%;overflow:hidden;display:flex;align-items:center">
+              ${usedPct>25?`<span>${bm.len.toLocaleString()}mm</span>`:''}
+            </div>
+            ${isLast&&r.Remaining>0?`<div class="beam-waste" style="width:${wstPct.toFixed(0)}%">${r.Remaining.toLocaleString()}mm</div>`:''}
+          </div>
+          <div class="beam-gap" style="left:${bPct}%"></div>
+        </div>
+        <div class="beam-size">${bm.len.toLocaleString()}</div>
+      </div>`;
+    }
+    if(bm.n>4)h+=`<div style="font-size:10px;color:var(--t3);margin:2px 0 6px 90px;">+${bm.n-4} more beams</div>`;
+  });
+  return h+'</div>';
+}
+
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');}
+function jumpViz(id){closeDrawer();gotoPage('visualizer');setTimeout(()=>{document.getElementById('viz-sel').value=id;renderViz();},80);}
+
+// ============================================================
+// NEST VIEW
+// ============================================================
+function renderNestList(){
+  const ids=Object.keys(nestMap).sort((a,b)=>+a-+b);
+  setText('nest-badge',ids.length.toLocaleString());
+  const listEl=document.getElementById('nest-list');
+  const srch=document.getElementById('nest-search');
+
+  function render(filter=''){
+    const filtered=ids.filter(id=>id.includes(filter));
+    listEl.innerHTML=filtered.slice(0,200).map(id=>{
+      const rows=nestMap[id];
+      const oldW=sum(rows,r=>r.OldRemaining);
+      let newW=0;
+      rows.forEach(item=>{
+        const b=batchByLen[item.Length];
+        if(b)newW+=Math.round(b.Remaining/b.RowCount);
+      });
+      const TL=sum(rows,r=>r.TotalLength);
+      const effApprox=TL>0?Math.min(100,TL/(TL+oldW)*100):0;
+      const improved=newW<oldW;
+      return `<div class="nest-item" id="ni-${id}" onclick="selectNest('${id}')">
+        <div class="ni-hdr">
+          <span class="ni-id">N-${id}</span>
+          <span class="ni-cnt">${rows.length}×</span>
+        </div>
+        <div class="ni-bar">
+          <div class="ni-bar-fill" style="width:${effApprox.toFixed(0)}%;background:${improved?'var(--green)':'var(--amber)'}"></div>
+        </div>
+        <div class="ni-meta">
+          Old: ${fmm(oldW)}<br>
+          New: <span style="color:${improved?'var(--green)':'var(--amber)'};font-weight:600">${fmm(newW)}</span>
+          ${improved?`<span style="color:var(--green);font-weight:600"> (−${fmm(oldW-newW)})</span>`:''}
+        </div>
+      </div>`;
+    }).join('')+
+    (filtered.length>200?`<div style="text-align:center;padding:10px;font-size:11px;color:var(--t3)">+${(filtered.length-200).toLocaleString()} — refine filter</div>`:'');
+  }
+  render();
+  if(srch)srch.addEventListener('input',debounce(()=>render(srch.value),150));
+}
+
+function selectNest(id){
+  document.querySelectorAll('.nest-item').forEach(el=>el.classList.remove('selected'));
+  const el=document.getElementById('ni-'+id);
+  if(el)el.classList.add('selected');
+
+  const rows=nestMap[id];
+  if(!rows)return;
+  document.getElementById('nest-ph').style.display='none';
+  const ct=document.getElementById('nest-ct');
+  ct.style.display='block';
+
+  const oldWTotal=sum(rows,r=>r.OldRemaining);
+  const TL=sum(rows,r=>r.TotalLength);
+
+  let newWTotal=0;
+  const enriched=rows.map(item=>{
+    const b=batchByLen[item.Length];
+    const nw=b?Math.round(b.Remaining/b.RowCount):0;
+    newWTotal+=nw;
+    return{...item,batchID:b?.BatchID,newWaste:nw};
+  });
+
+  const saved=oldWTotal-newWTotal;
+  const maxW=Math.max(oldWTotal,newWTotal,1);
+
+  let html=`<div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <span style="font-size:20px;font-weight:700;color:var(--navy)">Nest #${id}</span>
+      <span class="chip cb">${rows.length} items</span>
+      ${saved>0?`<span class="chip cg">Saved ${fmm(saved)}</span>`:`<span class="chip ca">No saving</span>`}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <div class="panel" style="padding:14px;border-top:3px solid var(--red)">
+        <div class="kpi-lbl">Original Waste</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--red)">${fmm(oldWTotal)}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">sum of item remainders</div>
+      </div>
+      <div class="panel" style="padding:14px;border-top:3px solid var(--green)">
+        <div class="kpi-lbl">Optimised Waste</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${newWTotal<oldWTotal?'var(--green)':'var(--red)'}">${fmm(newWTotal)}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">proportional from batch</div>
+      </div>
+      <div class="panel" style="padding:14px;border-top:3px solid var(--accent)">
+        <div class="kpi-lbl">Reduction</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${saved>=0?'var(--green)':'var(--red)'}">${saved>=0?'−':'+'} ${fmm(Math.abs(saved))}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">${oldWTotal>0?(saved/oldWTotal*100).toFixed(1)+'%':''}</div>
+      </div>
+    </div>
+
+    <div class="sec-div">Waste Comparison</div>
+    <div style="margin-bottom:16px">
+      <div class="wc-row">
+        <div class="wc-lbl">Original</div>
+        <div class="wc-track"><div class="wc-fill" style="width:${(oldWTotal/maxW*100).toFixed(1)}%;background:var(--red)"></div></div>
+        <div class="wc-num c-bad">${fmm(oldWTotal)}</div>
+      </div>
+      <div class="wc-row">
+        <div class="wc-lbl">Optimised</div>
+        <div class="wc-track"><div class="wc-fill" style="width:${(newWTotal/maxW*100).toFixed(1)}%;background:var(--green)"></div></div>
+        <div class="wc-num c-good">${fmm(newWTotal)}</div>
+      </div>
+    </div>
+
+    <div class="sec-div">Item Breakdown</div>
+    <div class="tw">
+      <table class="dt">
+        <thead><tr>
+          <th>Item No.</th><th>Length (mm)</th><th>Required (mm)</th>
+          <th>Old Waste</th><th>New Waste</th><th>Saved</th><th>Batch</th>
+        </tr></thead>
+        <tbody>${enriched.map(item=>{
+          const s=item.OldRemaining-item.newWaste;
+          return`<tr>
+            <td class="c-id">${item.ItemNumber}</td>
+            <td>${item.Length.toLocaleString()}</td>
+            <td>${item.TotalLength.toLocaleString()}</td>
+            <td class="c-bad">${item.OldRemaining.toLocaleString()}</td>
+            <td class="${item.newWaste<item.OldRemaining?'c-good':'c-warn'}">${item.newWaste.toLocaleString()}</td>
+            <td class="${s>0?'c-good':s<0?'c-bad':'c-dim'}">${s!==0?(s>0?'−':'+')+Math.abs(s).toLocaleString():'0'}</td>
+            <td><span class="chip cb" style="cursor:pointer" onclick="event.stopPropagation();openDrawer(${item.batchID})">#${item.batchID||'—'}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+  ct.innerHTML=html;
+}
+
+// ============================================================
+// VISUALIZER
+// ============================================================
+function populateVizSel(){
+  const sel=document.getElementById('viz-sel');
+  const slider=document.getElementById('viz-slider');
+  RD.forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r.BatchID;
+    o.textContent=`#${r.BatchID} — ${r.Length}mm — Waste: ${r.Remaining.toLocaleString()}mm`;
+    sel.appendChild(o);
+  });
+  if(slider){slider.max=RD.length;slider.value=1;}
+}
+
+function onVizSlide(v){
+  const r=RD[+v-1];
+  if(!r)return;
+  setText('viz-slbl','#'+r.BatchID);
+  document.getElementById('viz-sel').value=r.BatchID;
+  renderViz();
+}
+
+function renderViz(){
+  const batchId=+document.getElementById('viz-sel')?.value;
+  if(!batchId)return;
+  const r=RD.find(x=>x.BatchID===batchId);
+  if(!r)return;
+  const eff=r.purchased>0?r.X/r.purchased*100:0;
+  setText('viz-eff',eff.toFixed(2)+'%');
+  document.getElementById('viz-qs').innerHTML=
+    `Waste: <span style="color:var(--red);font-weight:700">${r.Remaining.toLocaleString()}mm</span><br>`+
+    `Beams: <span style="color:var(--navy);font-weight:700">${r.totalBeams}</span><br>`+
+    `Items: <span style="color:var(--navy);font-weight:700">${r.RowCount}</span>`;
+
+  const beams=[
+    {lbl:'6000mm',n:r.a,len:6000,col:'var(--accent)'},
+    {lbl:'8000mm',n:r.b,len:8000,col:'var(--green)'},
+    {lbl:'13000mm',n:r.c,len:13000,col:'var(--red)'},
+  ].filter(b=>b.n>0);
+  const MAX=13000;
+
+  let html=`
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <span style="font-size:13px;color:var(--t2);font-weight:500">
+        Batch #${r.BatchID} · ${r.Length}mm cut · ${r.RowCount} items · Required: ${r.X.toLocaleString()}mm
+      </span>
+      <span class="chip ${eff>=99?'cg':eff>=95?'cb':'ca'}">Efficiency: ${eff.toFixed(2)}%</span>
+      <span class="chip ${r.Remaining===0?'cg':r.Remaining<2000?'cb':'ca'}">Waste: ${r.Remaining.toLocaleString()}mm</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding-right:66px">
+      <div style="width:82px;flex-shrink:0"></div>
+      <div style="flex:1;display:flex;justify-content:space-between;font-size:9px;color:var(--t3);font-family:var(--mono);font-weight:500">
+        ${[0,1,2,3,4,5,6,7,8,9,10,11,12,13].map(n=>`<span>${n}k</span>`).join('')}
+      </div>
+      <div style="width:66px"></div>
+    </div>`;
+
+  beams.forEach(bm=>{
+    for(let i=0;i<bm.n;i++){
+      const isLast=(i===bm.n-1)&&(bm===beams[beams.length-1]);
+      const usedMM=isLast?r.X-(r.purchased-bm.len):bm.len;
+      const usedPct=Math.min(100,usedMM/bm.len*100);
+      const wstMM=isLast?r.Remaining:0;
+      const wstPct=100-usedPct;
+      const bPct=(bm.len/MAX*100).toFixed(2);
+
+      html+=`<div class="beam-row">
+        <div class="beam-lbl">${bm.lbl} #${i+1}</div>
+        <div class="beam-track">
+          <div class="beam-used" style="width:${bPct}%;background:${bm.col}">
+            <div style="width:${usedPct.toFixed(1)}%;height:100%;display:flex;align-items:center;overflow:hidden">
+              ${usedPct>20?`<span style="white-space:nowrap">${usedMM.toLocaleString()}mm</span>`:''}
+            </div>
+            ${wstMM>0?`<div class="beam-waste" style="width:${wstPct.toFixed(1)}%">${wstMM.toLocaleString()}mm</div>`:''}
+          </div>
+          <div class="beam-gap" style="left:${bPct}%"></div>
+        </div>
+        <div class="beam-size">${bm.len.toLocaleString()}mm</div>
+      </div>`;
+    }
+  });
+  document.getElementById('viz-ct').innerHTML=html;
+
+  // Neighbouring waste chart
+  const idx=RD.findIndex(x=>x.BatchID===batchId);
+  const nbr=RD.slice(Math.max(0,idx-10),idx+11);
+  mkChart('ch-nbr','bar',{
+    labels:nbr.map(x=>'B'+x.BatchID),
+    datasets:[{label:'Waste',data:nbr.map(x=>x.Remaining),
+      backgroundColor:nbr.map(x=>x.BatchID===batchId?'#2563EB':'#E2E6EC'),
+      borderRadius:3}]
+  },{plugins:{legend:{display:false}},
+     scales:{x:{ticks:{color:'#6B7280',font:{size:9}},grid:{display:false}},
+             y:{ticks:{color:'#6B7280',font:{size:10}},grid:{color:'#E2E6EC'}}}});
+}
+
+// ============================================================
+// CHART BUILDER
+// ============================================================
+function mkChart(id,type,data,opts={}){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  const cv=document.getElementById(id);
+  if(!cv)return;
+  charts[id]=new Chart(cv.getContext('2d'),{
+    type,data,
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:480,easing:'easeOutQuart'},
+      plugins:{
+        tooltip:{
+          backgroundColor:'#0F172A',borderColor:'#374151',borderWidth:1,
+          titleColor:'#F9FAFB',bodyColor:'#9CA3AF',padding:10,
+          titleFont:{family:"'DM Sans'",size:12,weight:'600'},
+          bodyFont:{family:"'DM Mono'",size:11}
+        },
+        legend:{labels:{color:'#374151',font:{family:"'DM Sans'",size:12},padding:14,boxWidth:12}},
+        ...(opts.plugins||{})
+      },
+      scales:{
+        x:{grid:{color:'#E2E6EC'},ticks:{color:'#6B7280',font:{family:"'DM Sans'",size:10}},...(opts.scales?.x||{})},
+        y:{grid:{color:'#E2E6EC'},ticks:{color:'#6B7280',font:{family:"'DM Sans'",size:10}},...(opts.scales?.y||{})},
+      }
+    }
+  });
+  return charts[id];
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function gotoPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name)?.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>{
+    if(t.getAttribute('onclick')?.includes(name))t.classList.add('active');
+  });
+  closeDrawer();
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function doExport(){
+  let csv='BatchID,Length,RowCount,X,a,b,c,Remaining,Purchased,Efficiency%\n';
+  RD.forEach(r=>{ csv+=`${r.BatchID},${r.Length},${r.RowCount},${r.X},${r.a},${r.b},${r.c},${r.Remaining},${r.purchased},${r.efficiency.toFixed(4)}\n`; });
+  electronAPI.exportData({data:csv,filename:'beamopt_export.csv'});
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function sum(arr,fn){return arr.reduce((s,r)=>s+(fn(r)||0),0);}
+function fmm(v){
+  v=Math.round(v);
+  if(v>=1e6)return(v/1e6).toFixed(2)+' m';
+  if(v>=1000)return(v/1000).toFixed(1)+'k mm';
+  return v.toLocaleString()+' mm';
+}
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+
+function toggleTheme() {
+  const body = document.body;
+  body.classList.toggle('dark');
+  const btn = document.getElementById('theme-btn');
+  if (body.classList.contains('dark')) {
+    btn.textContent = "☀️ Light";
+    localStorage.setItem("theme", "dark");
+  } else {
+    btn.textContent = "🌙 Dark";
+    localStorage.setItem("theme", "light");
+  }
+  Object.values(charts).forEach(c => c && c.destroy());
+  charts = {};
+  renderOverviewCharts();
+  renderCum('ch-cum');
+  renderCum('ch-vcum');
+  const currentBatch = document.getElementById('viz-sel')?.value;
+  if (currentBatch) {
+    renderViz();
+  }
+}
+
+// load saved theme
+window.addEventListener('DOMContentLoaded', () => {
+  setupSearch();
+
+  document.body.classList.remove("dark");
+  localStorage.setItem("theme", "light");
+
+  const btn = document.getElementById('theme-btn');
+  if (btn) {
+    btn.textContent = "🌙 Dark";
+  }
+});
+// ============================================================
+// BOOT
+// ============================================================
+</script>
+</body>
+</html>
