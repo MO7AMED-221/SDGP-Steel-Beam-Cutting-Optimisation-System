@@ -46,3 +46,13 @@ Minimizes:
 Total material used
 Number of beams
 Uses modular arithmetic for efficiency
+
+Technologies Used
+Electron – Desktop application
+Python – Optimization algorithm
+JavaScript / HTML / CSS – Frontend
+CSV Processing – Data handling
+
+Conclusion
+
+This system provides a high-efficiency, secure, and user-friendly solution for industrial beam cutting optimization, achieving near-optimal material utilization while remaining practical for real-world shipyard environments.
