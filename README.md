@@ -1,12 +1,28 @@
 # SDGP-Steel-Beam-Cutting-Optimisation-System
 
-Overview
+Requirements
 
-This project is a standalone desktop dashboard designed to minimize material waste in steel beam cutting for ship construction. It uses a mathematical optimization algorithm to calculate the most efficient combination of standard beam sizes and visualize the results through an interactive interface.
+Make sure you have the following installed:
 
-Aim
+Node.js (v16 or later recommended)
+npm (comes with Node.js)
+Python 3
+How to Run the Application
+Clone the repository
+git clone <your-repo-link>
+cd <your-project-folder>
+Install dependencies
+npm install
+Run the Electron app
+npm start
+Notes
+Make sure Python is installed and added to your system PATH
+The app runs locally (offline)
+Upload your CSV file through the dashboard to start processing
 
-The goal of this system is to reduce trim loss and improve material efficiency by finding the optimal combination of beam lengths (6000mm, 8000mm, 13000mm) for each batch.
+Overview: This project is a standalone desktop dashboard designed to minimize material waste in steel beam cutting for ship construction. It uses a mathematical optimization algorithm to calculate the most efficient combination of standard beam sizes and visualize the results through an interactive interface.
+
+Aims: The goal of this system is to reduce trim loss and improve material efficiency by finding the optimal combination of beam lengths (6000mm, 8000mm, 13000mm) for each batch.
 
 Key Features
 Functional Features
@@ -53,6 +69,4 @@ Python – Optimization algorithm
 JavaScript / HTML / CSS – Frontend
 CSV Processing – Data handling
 
-Conclusion
-
-This system provides a high-efficiency, secure, and user-friendly solution for industrial beam cutting optimization, achieving near-optimal material utilization while remaining practical for real-world shipyard environments.
+Conclusion: This system provides a high-efficiency, secure, and user-friendly solution for industrial beam cutting optimization, achieving near-optimal material utilization while remaining practical for real-world shipyard environments.
